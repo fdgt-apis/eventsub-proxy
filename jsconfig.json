@@ -1,0 +1,11 @@
+{
+  "esnext": {
+    "module": "esnext",
+    "target": "esnext"
+  },
+	"exclude": [
+		".github",
+		".yarn",
+		"node_modules"
+	]
+}
