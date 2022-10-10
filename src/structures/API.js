@@ -51,8 +51,6 @@ export class API {
 	}
 
 	initialiseRouter() {
-		console.log(this.#router.routes().router.stack)
-
 		this.#app.use(this.#router.routes())
 		this.#app.use(this.#router.allowedMethods())
 	}
