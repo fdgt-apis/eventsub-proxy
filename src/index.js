@@ -1,25 +1,12 @@
 import 'dotenv/config'
 
-// Module imports
-import { WebSocketServer } from 'ws'
-
 
 
 
 
 // Local imports
 import { cleanup } from './helpers/cleanup.js'
-import { Connection } from './structures/Connection.js'
-import { Twitch } from './structures/Twitch.js'
-
-
-
-
-
-// Local constants
-const {
-	WS_PORT = 3000,
-} = process.env
+import { Server } from './structures/Server.js'
 
 
 
@@ -28,11 +15,8 @@ const {
 process.on('exit', cleanup)
 process.on('SIGINT', cleanup)
 process.on('SIGTERM', cleanup)
+process.on('uncaughtException', (...args) => console.log(...args))
 
-const wsServer = new WebSocketServer({ port: WS_PORT })
+const server = new Server
 
-Twitch.initialiseEventsub()
-wsServer.on('connection', (...args) => new Connection(...args))
-
-console.log('Server started.')
-console.log(`Listening for WebSocket connections on port ${WS_PORT}.`)
+server.start()

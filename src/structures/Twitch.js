@@ -1,10 +1,7 @@
 // Module imports
-import {
-	EventSubListener,
-	ReverseProxyAdapter,
-} from '@twurple/eventsub'
 import { ApiClient } from '@twurple/api'
 import { ClientCredentialsAuthProvider } from '@twurple/auth'
+import { EventSubMiddleware } from '@twurple/eventsub'
 
 
 
@@ -14,7 +11,6 @@ import { ClientCredentialsAuthProvider } from '@twurple/auth'
 const {
 	EVENTSUB_HOSTNAME,
 	EVENTSUB_SECRET,
-	HTTP_PORT = 3001,
 	TWITCH_CLIENT_ID,
 	TWITCH_CLIENT_SECRET,
 } = process.env
@@ -35,9 +31,7 @@ export class TwitchClass {
 
 	#authProvider = null
 
-	#eventListener = null
-
-	#eventsubIsInitialised = false
+	#eventsubMiddleware = null
 
 
 
@@ -58,6 +52,13 @@ export class TwitchClass {
 
 		this.#apiClient = new ApiClient({
 			authProvider: this.#authProvider,
+		})
+
+		this.#eventsubMiddleware = new EventSubMiddleware({
+			apiClient: this.#apiClient,
+			hostName: EVENTSUB_HOSTNAME,
+			pathPrefix: '/eventsub',
+			secret: EVENTSUB_SECRET,
 		})
 	}
 
@@ -82,28 +83,6 @@ export class TwitchClass {
 		}
 
 		return user
-	}
-
-	/**
-	 * Initialises an Eventsub listener.
-	 */
-	async initialiseEventsub() {
-		if (this.#eventsubIsInitialised) {
-			return
-		}
-
-		this.#eventListener = new EventSubListener({
-			apiClient: this.#apiClient,
-			adapter: new ReverseProxyAdapter({
-				hostName: EVENTSUB_HOSTNAME,
-				port: HTTP_PORT,
-			}),
-			secret: EVENTSUB_SECRET,
-		})
-
-		await this.#eventListener.listen()
-
-		this.#eventsubIsInitialised = true
 	}
 
 	/**
@@ -327,7 +306,7 @@ export class TwitchClass {
 			throw new Error(`The ${event} event is currently unsupported.`)
 		}
 
-		return this.#eventListener[handlerMethodName](...eventListenerArgs, handler)
+		return this.#eventsubMiddleware[handlerMethodName](...eventListenerArgs, handler)
 	}
 
 
@@ -338,11 +317,8 @@ export class TwitchClass {
 	 * Public instance getters/setters
 	\****************************************************************************/
 
-	/**
-	 * @returns {boolean} Whether or not the Eventsub listener has been initialised.
-	 */
-	get eventsubIsInitialised() {
-		return this.#eventsubIsInitialised
+	get eventsubMiddleware() {
+		return this.#eventsubMiddleware
 	}
 }
 
