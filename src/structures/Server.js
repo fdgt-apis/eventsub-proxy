@@ -64,6 +64,8 @@ export class Server {
 			},
 		})
 
+		this.#api.router.get('/status', context => (context.status = 204))
+
 		this.#api.initialiseRouter()
 
 		// Create the Websocket server
