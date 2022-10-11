@@ -50,18 +50,19 @@ export class Server {
 
 		this.#api.initialiseMiddleware()
 
+		const middlewareHandlerWrapper = method => (path, handler) => {
+			this.#api.router[method](path, (context, next) => {
+				context.req.params = context.params
+				return handler(context.req, context.res, next)
+			})
+		}
+
 		Twitch.eventsubMiddleware.apply({
-			get: (path, handler) => {
-				this.#api.router.get(path, (context, next) => {
-					return handler()(context.req, context.res, next)
-				})
-			},
-			post: (path, handler) => {
-				this.#api.router.post(path, (context, next) => {
-					context.req.params = context.params
-					return handler(context.req, context.res, next)
-				})
-			},
+			delete: middlewareHandlerWrapper('delete'),
+			get: middlewareHandlerWrapper('get'),
+			patch: middlewareHandlerWrapper('patch'),
+			post: middlewareHandlerWrapper('post'),
+			put: middlewareHandlerWrapper('put'),
 		})
 
 		this.#api.router.get('/status', context => (context.status = 204))
