@@ -122,7 +122,7 @@ export class Connection {
 
 		this.send({ action: 'PING' })
 
-		this.#closeTimeoutID = setTimeout(() => this.close('missing heartbeat'), 5000)
+		this.#closeTimeoutID = setTimeout(() => this.close('missing heartbeat'), process.env.CONNECTION_PING_RESPONSE_TIMEOUT)
 	}
 
 	/**
@@ -140,7 +140,7 @@ export class Connection {
 	 *
 	 */
 	#startPing() {
-		this.#pingIntervalID = setInterval(() => this.#ping(), 30000)
+		this.#pingIntervalID = setInterval(() => this.#ping(), process.env.CONNECTION_PING_FREQUENCY)
 	}
 
 
